@@ -1,4 +1,4 @@
-# Intro
+# OllieAve.GitCliSuperset
 
 I build this tool to save me a little time after a policy came in wherby I had to structure my commit messages in a certain way.
 
