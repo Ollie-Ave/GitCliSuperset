@@ -33,11 +33,13 @@ Install the tool and away you go.
 
 Git commit has been revamped to it will produce messages in the following format based on your changes:
 
+```
 [Jira-Key]-[Jira-Number] - [Jira-Title]
 
 - Bullet pointed
 - Summary of the
 - Changes
+```
 
 ### Git checkout.
 
