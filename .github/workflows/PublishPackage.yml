@@ -20,12 +20,12 @@ jobs:
     - name: Create NuGet Package
       run: dotnet pack --configuration Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/Ollie-Ave/BackgroundTaskManager/releases/tag/${{ github.event.release.tag_name }}"  --output .
     - name: Archive NuGet Package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OllieAve.GitCliSuperset
         path: ./GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
     - name: Upload NuGet Package
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: OllieAve.GitCliSuperset
         path: ./GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
