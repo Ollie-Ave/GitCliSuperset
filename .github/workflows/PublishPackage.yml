@@ -22,12 +22,12 @@ jobs:
     - name: Archive NuGet Package
       uses: actions/upload-artifact@v4
       with:
-        name: OllieAve.GitCliSuperset
-        path: ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
+        name: OllieAve.GitCliSuperset.Console
+        path: ./OllieAve.GitCliSuperset.Console.${{ github.event.release.tag_name }}.nupkg
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4
       with:
-        name: OllieAve.GitCliSuperset
-        path: ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
+        name: OllieAve.GitCliSuperset.Console
+        path: ./OllieAve.GitCliSuperset.Console.${{ github.event.release.tag_name }}.nupkg
     - name: Publish Nuget Package
-      run: dotnet nuget push ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg --skip-duplicate --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols
+      run: dotnet nuget push ./OllieAve.GitCliSuperset.Console.${{ github.event.release.tag_name }}.nupkg --skip-duplicate --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols
