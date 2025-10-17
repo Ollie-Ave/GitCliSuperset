@@ -17,17 +17,17 @@ jobs:
         dotnet-version: 9.0.x
     - name: Build Package
       run: dotnet build --configuration Release
-    - name: Create NuGet Package
-      run: dotnet pack --configuration Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/Ollie-Ave/BackgroundTaskManager/releases/tag/${{ github.event.release.tag_name }}"  --output .
+    - name: Pack NuGet Package
+      run: dotnet pack --configuration Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/Ollie-Ave/OllieAve.GitCliSuperset/releases/tag/${{ github.event.release.tag_name }}"  --output .
     - name: Archive NuGet Package
       uses: actions/upload-artifact@v4
       with:
         name: OllieAve.GitCliSuperset
-        path: ./GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
+        path: ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4
       with:
         name: OllieAve.GitCliSuperset
-        path: ./GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
+        path: ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg
     - name: Publish Nuget Package
       run: dotnet nuget push ./OllieAve.GitCliSuperset.${{ github.event.release.tag_name }}.nupkg --skip-duplicate --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols
