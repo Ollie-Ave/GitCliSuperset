@@ -42,7 +42,7 @@ public partial class JiraService : IJiraService
             return null;
         }
 
-        var regex = @"(?i)(?:^|-)" + options.Value.JiraProjectKey + @"(\d+)(?:-|$)";
+        var regex = @"(?i)(?:^|-)" + options.Value.JiraProjectKey + @"-(\d+)(?:-|$)";
         var match = Regex.Match(branchName, regex);
 
         if (!match.Success)
