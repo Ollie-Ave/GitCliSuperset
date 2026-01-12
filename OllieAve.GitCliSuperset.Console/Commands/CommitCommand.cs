@@ -8,66 +8,80 @@ namespace OllieAve.GitCliSuperset.Console.Commands;
 
 public class CommitCommand : ICommitCommand
 {
-	private readonly IGitService gitService;
-	private readonly IJiraService jiraService;
-	private readonly OpenAiService openAiService;
+    private readonly IGitService gitService;
+    private readonly IJiraService jiraService;
+    private readonly OpenAiService openAiService;
 
-	public CommitCommand(
-		IGitService gitService,
-		IJiraService jiraService,
-		OpenAiService openAiService)
-	{
-		this.gitService = gitService;
-		this.jiraService = jiraService;
-		this.openAiService = openAiService;
-	}
+    public CommitCommand(
+        IGitService gitService,
+        IJiraService jiraService,
+        OpenAiService openAiService)
+    {
+        this.gitService = gitService;
+        this.jiraService = jiraService;
+        this.openAiService = openAiService;
+    }
 
-	public async Task Commit()
-	{
-		await AnsiConsole
-			.Status()
-			.Start("Thinking...", async ctx =>
-			{
-				AnsiConsole.MarkupLine("Getting current branch name...");
-				var result = await gitService.ExecuteCommand("branch --show-current");
+    public async Task Commit(bool debug)
+    {
+        if (debug)
+        {
+            var options = openAiService.GetOptions();
 
-				if (!result.Success)
-				{
-					AnsiConsole.MarkupLine("[red]Failed to get current branch name[/]");
-					return;
-				}
+            AnsiConsole.WriteLine("Committing changes with configuration:");
+            AnsiConsole.WriteLine($"{nameof(options.ApiKey)} - {options.ApiKey}");
+            AnsiConsole.WriteLine($"{nameof(options.Model)} - {options.Model}");
+        }
 
-				int? jiraNumber = jiraService.ParseJiraNumber(result.Output);
+        await AnsiConsole
+            .Status()
+            .Start("Thinking...", async ctx =>
+            {
+                AnsiConsole.MarkupLine("Getting current branch name...");
+                var result = await gitService.ExecuteCommand("branch --show-current");
 
-				if (jiraNumber == null)
-				{
-					AnsiConsole.MarkupLine("[red]Failed to get Jira issue number[/]");
-					return;
-				}
+                if (!result.Success)
+                {
+                    AnsiConsole.MarkupLine("[red]Failed to get current branch name[/]");
+                    return;
+                }
 
-				AnsiConsole.MarkupLine("Getting Jira issue title...");
-				string? jiraTitle = await jiraService.GetJiraIssueTitle(jiraNumber.Value);
+                int? jiraNumber = jiraService.ParseJiraNumber(result.Output);
 
-				AnsiConsole.MarkupLine("Generating commit message...");
-				var gitDiffResult = await gitService.ExecuteCommand("--no-pager diff --staged");
+                if (jiraNumber == null)
+                {
+                    AnsiConsole.MarkupLine("[red]Failed to get Jira issue number[/]");
+                    return;
+                }
 
-				if (!gitDiffResult.Success)
-				{
-					AnsiConsole.MarkupLine("[red]Failed to get changes[/]");
-					return;
-				}
+                AnsiConsole.MarkupLine("Getting Jira issue title...");
+                string? jiraTitle = await jiraService.GetJiraIssueTitle(jiraNumber.Value);
 
-				string commitMessage = await openAiService.GenerateCommitMessage(gitDiffResult.Output);
-				string fullCommitMessage = $"{jiraService.GetProjectKey()}-{jiraNumber} - {jiraTitle}\n\n{commitMessage}";
+                AnsiConsole.MarkupLine("Generating commit message...");
+                var gitDiffResult = await gitService.ExecuteCommand("--no-pager diff --staged");
 
-				AnsiConsole.MarkupLine("Committing changes...");
-				var commitResult = await gitService.ExecuteCommand($"commit -m \"{commitMessage}\"");
+                if (!gitDiffResult.Success)
+                {
+                    AnsiConsole.MarkupLine("[red]Failed to get changes[/]");
+                    return;
+                }
 
-				if (!commitResult.Success)
-				{
-					AnsiConsole.MarkupLine("[red]Failed to commit changes[/]");
-					return;
-				}
-			});
-	}
+                if (gitDiffResult.Output.Length == 0)
+                {
+                    AnsiConsole.MarkupLine("[red]No staged changes to commit[/]");
+                    return;
+                }
+
+                string commitMessage = await openAiService.GenerateCommitMessage(gitDiffResult.Output);
+                string fullCommitMessage = $"{jiraService.GetProjectKey()}-{jiraNumber} - {jiraTitle}\n\n{commitMessage}";
+
+                var commitResult = await gitService.ExecuteCommand($"commit -m \"{commitMessage}\"");
+
+                if (!commitResult.Success)
+                {
+                    AnsiConsole.MarkupLine("[red]Failed to commit changes[/]");
+                    return;
+                }
+            });
+    }
 }
