@@ -12,77 +12,84 @@ namespace OllieAve.GitCliSuperset.Console;
 
 public static class Program
 {
-	public static async Task Main(string[] args)
-	{
-		var appSettings = await LoadAppSettingsAsync();
+    public static async Task Main(string[] args)
+    {
+        var debug = args.Contains("--debug");
 
-		if (appSettings is null)
-		{
-			AnsiConsole.MarkupLine("[red]Failed to load app settings[/]");
-			return;
-		}
+        var appSettings = await LoadAppSettingsAsync(debug);
 
-		var serviceProvider = ConfigureServices(appSettings);
+        if (appSettings is null)
+        {
+            AnsiConsole.MarkupLine("[red]Failed to load app settings[/]");
+            return;
+        }
 
-		var command = args.FirstOrDefault();
+        var serviceProvider = ConfigureServices(appSettings);
 
+        var command = args.FirstOrDefault();
 
-		switch (command)
-		{
-			case "commit":
-				await serviceProvider
-					.GetRequiredService<ICommitCommand>()
-					.Commit();
-				break;
-			case "checkout":
-				await serviceProvider
-					.GetRequiredService<ICheckoutCommand>()
-					.Checkout();
-				break;
-			default:
-				await serviceProvider
-					.GetRequiredService<IPassThroughToGitCommand>()
-					.PassThroughToGit(args);
-				break;
-		}
-	}
+        switch (command)
+        {
+            case "commit":
+                await serviceProvider
+                    .GetRequiredService<ICommitCommand>()
+                    .Commit(debug);
+                break;
+            case "checkout":
+                await serviceProvider
+                    .GetRequiredService<ICheckoutCommand>()
+                    .Checkout();
+                break;
+            default:
+                await serviceProvider
+                    .GetRequiredService<IPassThroughToGitCommand>()
+                    .PassThroughToGit(args);
+                break;
+        }
+    }
 
-	private static async Task<AppSettings?> LoadAppSettingsAsync()
-	{
+    private static async Task<AppSettings?> LoadAppSettingsAsync(bool debug)
+    {
+        string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string settingsPath = Path.Join(homePath, ".gitCliSuperset", "settings.json");
 
-		string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-		var appSettingsRaw = await File.ReadAllTextAsync($"{homePath}/.gitCliSuperset/settings.json");
+        if (debug)
+        {
+            AnsiConsole.WriteLine($"Loading application settings from path - {settingsPath}");
+        }
 
-		var appSettings = JsonSerializer.Deserialize<AppSettings>(appSettingsRaw);
+        var appSettingsRaw = await File.ReadAllTextAsync(settingsPath);
 
-		return appSettings;
-	}
+        var appSettings = JsonSerializer.Deserialize<AppSettings>(appSettingsRaw);
 
-	private static ServiceProvider ConfigureServices(AppSettings appSettings)
-	{
-		IServiceCollection services = new ServiceCollection();
+        return appSettings;
+    }
 
-		services.AddSingleton<ICommitCommand, CommitCommand>();
-		services.AddSingleton<ICheckoutCommand, CheckoutCommand>();
-		services.AddSingleton<IPassThroughToGitCommand, PassThroughToGitCommand>();
+    private static ServiceProvider ConfigureServices(AppSettings appSettings)
+    {
+        IServiceCollection services = new ServiceCollection();
 
-		services.AddSingleton<IGitService, GitService>();
-		services.AddSingleton<IJiraService, JiraService>();
-		services.AddSingleton<OpenAiService, OpenAiService>();
+        services.AddSingleton<ICommitCommand, CommitCommand>();
+        services.AddSingleton<ICheckoutCommand, CheckoutCommand>();
+        services.AddSingleton<IPassThroughToGitCommand, PassThroughToGitCommand>();
 
-		services.Configure<JiraOptions>(x => x = x with
-		{
-			JiraUrl = appSettings.JiraUrl,
-			JiraUser = appSettings.JiraUser,
-			JiraToken = appSettings.JiraToken
-		});
+        services.AddSingleton<IGitService, GitService>();
+        services.AddSingleton<IJiraService, JiraService>();
+        services.AddSingleton<OpenAiService, OpenAiService>();
 
-		services.Configure<OpenAiOptions>(x => x = x with
-		{
-			ApiKey = appSettings.OpenAiApiKey,
-			Model = appSettings.OpenAiModel
-		});
+        services.Configure<JiraOptions>(x =>
+        {
+            x.JiraUrl = appSettings.JiraUrl;
+            x.JiraUser = appSettings.JiraUser;
+            x.JiraToken = appSettings.JiraToken;
+        });
 
-		return services.BuildServiceProvider();
-	}
+        services.Configure<OpenAiOptions>(x =>
+        {
+            x.ApiKey = appSettings.OpenAiApiKey;
+            x.Model = appSettings.OpenAiModel;
+        });
+
+        return services.BuildServiceProvider();
+    }
 }
