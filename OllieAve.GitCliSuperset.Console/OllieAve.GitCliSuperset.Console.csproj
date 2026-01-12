@@ -27,7 +27,7 @@
 
   <PropertyGroup>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/you/repo</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Ollie-Ave/GitCliSuperset</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
