@@ -75,7 +75,7 @@ public class CommitCommand : ICommitCommand
                 string commitMessage = openAiService.GenerateCommitMessage(gitDiffResult.Output);
                 string fullCommitMessage = $"{jiraService.GetProjectKey()}-{jiraNumber} - {jiraTitle}\n\n{commitMessage}";
 
-                var commitResult = gitService.ExecuteCommand($"commit -m \"{commitMessage}\"");
+                var commitResult = gitService.ExecuteCommand($"commit -m \"{fullCommitMessage}\"");
 
                 if (!commitResult.Success)
                 {
