@@ -6,17 +6,17 @@ namespace OllieAve.GitCliSuperset.Console.Commands;
 
 public class PassThroughToGitCommand : IPassThroughToGitCommand
 {
-	private readonly IGitService gitService;
+    private readonly IGitService gitService;
 
-	public PassThroughToGitCommand(IGitService gitService)
-	{
-		this.gitService = gitService;
-	}
+    public PassThroughToGitCommand(IGitService gitService)
+    {
+        this.gitService = gitService;
+    }
 
-	public async Task PassThroughToGit(string[] args)
-	{
-		var result = await gitService.ExecuteCommand(string.Join(" ", args));
+    public async Task PassThroughToGit(string[] args)
+    {
+        var result = gitService.ExecuteCommand(string.Join(" ", args));
 
-		AnsiConsole.WriteLine(result.Output);
-	}
+        AnsiConsole.WriteLine(result.Output);
+    }
 }

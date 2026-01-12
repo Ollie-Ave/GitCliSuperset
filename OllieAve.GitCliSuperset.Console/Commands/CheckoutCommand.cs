@@ -7,87 +7,87 @@ namespace OllieAve.GitCliSuperset.Console.Commands;
 
 public class CheckoutCommand : ICheckoutCommand
 {
-	private readonly IGitService gitService;
-	private readonly IJiraService jiraService;
+    private readonly IGitService gitService;
+    private readonly IJiraService jiraService;
 
-	public CheckoutCommand(
-		IGitService gitService,
-		 IJiraService jiraService)
-	{
-		this.gitService = gitService;
-		this.jiraService = jiraService;
-	}
+    public CheckoutCommand(
+        IGitService gitService,
+         IJiraService jiraService)
+    {
+        this.gitService = gitService;
+        this.jiraService = jiraService;
+    }
 
-	public async Task Checkout()
-	{
-		var jira = AnsiConsole.Prompt(
-			new TextPrompt<string>($"Enter the Jira Ref (Without {jiraService.GetProjectKey()}):"));
+    public async Task Checkout()
+    {
+        var jira = AnsiConsole.Prompt(
+            new TextPrompt<string>($"Enter the Jira Ref (Without {jiraService.GetProjectKey()}):"));
 
-		await gitService.ExecuteCommand("fetch --prune origin");
-		var originBranches = await GetRemoteOriginBranches();
+        gitService.ExecuteCommand("fetch --prune origin");
+        var originBranches = await GetRemoteOriginBranches();
 
-		var originBranch = AnsiConsole.Prompt(
-			new SelectionPrompt<string>()
-				.Title("Select the [green]origin branch[/]")
-				.PageSize(10)
-				.MoreChoicesText("[grey](Move up and down to reveal more branches)[/]")
-				.AddChoices(originBranches));
+        var originBranch = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select the [green]origin branch[/]")
+                .PageSize(10)
+                .MoreChoicesText("[grey](Move up and down to reveal more branches)[/]")
+                .AddChoices(originBranches));
 
 
-		var hadLocalChanges = await HasLocalChangesIncludingUntracked();
-		if (hadLocalChanges)
-		{
-			await gitService.ExecuteCommand("stash push --include-untracked");
-		}
+        var hadLocalChanges = await HasLocalChangesIncludingUntracked();
+        if (hadLocalChanges)
+        {
+            gitService.ExecuteCommand("stash push --include-untracked");
+        }
 
-		string newBranchName = $"{originBranch.Replace("origin/", "")}-{jiraService.GetProjectKey()}-{jira}";
-		await gitService.ExecuteCommand($"checkout -b {newBranchName} {originBranch}");
+        string newBranchName = $"{originBranch.Replace("origin/", "")}-{jiraService.GetProjectKey()}-{jira}";
+        gitService.ExecuteCommand($"checkout -b {newBranchName} {originBranch}");
 
-		await gitService.ExecuteCommand("branch --unset-upstream");
+        gitService.ExecuteCommand("branch --unset-upstream");
 
-		if (hadLocalChanges)
-		{
-			await gitService.ExecuteCommand("stash pop");
-		}
-	}
+        if (hadLocalChanges)
+        {
+            gitService.ExecuteCommand("stash pop");
+        }
+    }
 
-	private async Task<List<string>> GetRemoteOriginBranches()
-	{
-		var output = await gitService.ExecuteCommand("branch -r");
+    private async Task<List<string>> GetRemoteOriginBranches()
+    {
+        var output = gitService.ExecuteCommand("branch -r");
 
-		var branches = output.Output
-			.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-			.Select(l => l.Trim())
-			.Where(l => !string.IsNullOrWhiteSpace(l))
-			.Select(l => l.StartsWith("remotes/") ? l["remotes/".Length..] : l)
-			.Where(l => l.StartsWith("origin/"))
-			.Where(l => !l.Contains("->"))
-			.Distinct(StringComparer.OrdinalIgnoreCase)
-			.OrderBy(l => l, StringComparer.OrdinalIgnoreCase)
-			.ToList();
+        var branches = output.Output
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Select(l => l.StartsWith("remotes/") ? l["remotes/".Length..] : l)
+            .Where(l => l.StartsWith("origin/"))
+            .Where(l => !l.Contains("->"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(l => l, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-		if (branches.Count == 0 && !string.IsNullOrWhiteSpace(output.Error))
-		{
-			AnsiConsole.MarkupLine($"[red]Failed to list remote branches:[/] {Markup.Escape(output.Error)}");
-		}
+        if (branches.Count == 0 && !string.IsNullOrWhiteSpace(output.Error))
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to list remote branches:[/] {Markup.Escape(output.Error)}");
+        }
 
-		return branches;
-	}
+        return branches;
+    }
 
-	private async Task<bool> HasLocalChangesIncludingUntracked()
-	{
-		var output = await gitService.ExecuteCommand("status --porcelain");
+    private async Task<bool> HasLocalChangesIncludingUntracked()
+    {
+        var output = gitService.ExecuteCommand("status --porcelain");
 
-		if (!output.Success)
-		{
-			AnsiConsole.MarkupLine($"[red]Failed to check git status:[/] {Markup.Escape(output.Error)}");
-			return false;
-		}
+        if (!output.Success)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to check git status:[/] {Markup.Escape(output.Error)}");
+            return false;
+        }
 
-		return output.Output
-			.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-			.Length != 0;
-	}
+        return output.Output
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Length != 0;
+    }
 
 }
 
