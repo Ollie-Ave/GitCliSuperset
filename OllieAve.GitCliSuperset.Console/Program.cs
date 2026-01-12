@@ -82,6 +82,7 @@ public static class Program
             x.JiraUrl = appSettings.JiraUrl;
             x.JiraUser = appSettings.JiraUser;
             x.JiraToken = appSettings.JiraToken;
+            x.JiraProjectKey = appSettings.JiraProjectKey;
         });
 
         services.Configure<OpenAiOptions>(x =>
