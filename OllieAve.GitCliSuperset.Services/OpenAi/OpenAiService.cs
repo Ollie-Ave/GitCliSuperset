@@ -16,14 +16,14 @@ public class OpenAiService
         return options.Value;
     }
 
-    public async Task<string> GenerateCommitMessage(string changes)
+    public string GenerateCommitMessage(string changes)
     {
         ChatClient client = new(
             model: options.Value.Model,
             apiKey: options.Value.ApiKey
             );
 
-        ChatCompletion completion = await client.CompleteChatAsync(string.Format(Prompts.GenerateCommitMessage, changes));
+        ChatCompletion completion = client.CompleteChat(string.Format(Prompts.GenerateCommitMessage, changes));
 
         return completion.Content[0].Text;
     }

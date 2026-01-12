@@ -33,12 +33,12 @@ public class CommitCommand : ICommitCommand
             AnsiConsole.WriteLine($"{nameof(options.Model)} - {options.Model}");
         }
 
-        await AnsiConsole
+        AnsiConsole
             .Status()
-            .Start("Thinking...", async ctx =>
+            .Start("Thinking...", ctx =>
             {
                 AnsiConsole.MarkupLine("Getting current branch name...");
-                var result = await gitService.ExecuteCommand("branch --show-current");
+                var result = gitService.ExecuteCommand("branch --show-current");
 
                 if (!result.Success)
                 {
@@ -55,10 +55,10 @@ public class CommitCommand : ICommitCommand
                 }
 
                 AnsiConsole.MarkupLine("Getting Jira issue title...");
-                string? jiraTitle = await jiraService.GetJiraIssueTitle(jiraNumber.Value);
+                string? jiraTitle = jiraService.GetJiraIssueTitle(jiraNumber.Value);
 
                 AnsiConsole.MarkupLine("Generating commit message...");
-                var gitDiffResult = await gitService.ExecuteCommand("--no-pager diff --staged");
+                var gitDiffResult = gitService.ExecuteCommand("--no-pager diff --staged");
 
                 if (!gitDiffResult.Success)
                 {
@@ -72,10 +72,10 @@ public class CommitCommand : ICommitCommand
                     return;
                 }
 
-                string commitMessage = await openAiService.GenerateCommitMessage(gitDiffResult.Output);
+                string commitMessage = openAiService.GenerateCommitMessage(gitDiffResult.Output);
                 string fullCommitMessage = $"{jiraService.GetProjectKey()}-{jiraNumber} - {jiraTitle}\n\n{commitMessage}";
 
-                var commitResult = await gitService.ExecuteCommand($"commit -m \"{commitMessage}\"");
+                var commitResult = gitService.ExecuteCommand($"commit -m \"{commitMessage}\"");
 
                 if (!commitResult.Success)
                 {
