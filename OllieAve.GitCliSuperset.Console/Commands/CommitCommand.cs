@@ -80,6 +80,10 @@ public class CommitCommand : ICommitCommand
                 if (!commitResult.Success)
                 {
                     AnsiConsole.MarkupLine("[red]Failed to commit changes[/]");
+
+                    AnsiConsole.MarkupLine("[red]Error:[/]");
+                    AnsiConsole.WriteLine(commitResult.Error);
+
                     return;
                 }
             });
