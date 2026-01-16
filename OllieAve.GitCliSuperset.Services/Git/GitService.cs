@@ -6,10 +6,21 @@ public class GitService : IGitService
 {
     public GitCommandResult ExecuteCommand(string commandWithArgs)
     {
+        return ExecuteCommand(commandWithArgs, false);
+    }
+
+    public GitCommandResult ExecuteCommand(string commandWithArgs, bool preserveColour)
+    {
+        string args = commandWithArgs;
+        if (preserveColour)
+        {
+            args += " --color=always";
+        }
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = commandWithArgs,
+            Arguments = args,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

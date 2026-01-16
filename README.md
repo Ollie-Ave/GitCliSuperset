@@ -62,3 +62,15 @@ A new command has been added that builds off `git checkout {branch_name}`.
 This can be triggered via `giti switch` which will, present you a list of your local branches. Once one is selected, this branch will be switched to on your local machine.
 
 If there are any local changes, it will attempt to bring these across.
+
+### Delete branches
+
+Deleting branches via the git CLI can be a pain.
+
+This has been revamped, you can call this one of three ways:
+
+- `giti branch delete`
+- `giti branch -d`
+- `giti branch -D`
+
+All three function exactly the same. All will force delete the branches you select from the multiselect window. Note, the behavioural differences between `-d` and `-D` are *not* preserved here.
