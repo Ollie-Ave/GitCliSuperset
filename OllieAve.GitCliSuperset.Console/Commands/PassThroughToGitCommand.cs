@@ -13,7 +13,7 @@ public class PassThroughToGitCommand : IPassThroughToGitCommand
         this.gitService = gitService;
     }
 
-    public async Task PassThroughToGit(string[] args)
+    public void PassThroughToGit(string[] args)
     {
         var result = gitService.ExecuteCommand(string.Join(" ", args));
 

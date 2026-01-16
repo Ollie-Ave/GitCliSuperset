@@ -22,7 +22,7 @@ public class CommitCommand : ICommitCommand
         this.openAiService = openAiService;
     }
 
-    public async Task Commit(bool debug)
+    public void Commit(bool debug)
     {
         if (debug)
         {
