@@ -69,7 +69,7 @@ public static class Program
         }
     }
 
-    private static AppSettings LoadAppSettingsAsync(bool debug)
+    private static AppSettings? LoadAppSettingsAsync(bool debug)
     {
         string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         string settingsPath = Path.Join(homePath, ".gitCliSuperset", "settings.json");
