@@ -54,3 +54,11 @@ Git checkout has also been revamped so that you can input a Jira number and it'l
 It'll then checkout a fresh branch named `[origin-branch-name]-[jira-key]-[jira-number]`. This won't have upstream info and pending changes will be carried over if possible, if not stashed.
 
 Simply type into the console `giti checkout`
+
+### Switch branch.
+
+A new command has been added that builds off `git checkout {branch_name}`.
+
+This can be triggered via `giti switch` which will, present you a list of your local branches. Once one is selected, this branch will be switched to on your local machine.
+
+If there are any local changes, it will attempt to bring these across.

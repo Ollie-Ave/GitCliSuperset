@@ -40,6 +40,11 @@ public static class Program
                     .GetRequiredService<ICheckoutCommand>()
                     .Checkout();
                 break;
+            case "switch":
+                await serviceProvider
+                    .GetRequiredService<ISwitchCommand>()
+                    .Switch();
+                break;
             default:
                 await serviceProvider
                     .GetRequiredService<IPassThroughToGitCommand>()
@@ -71,6 +76,7 @@ public static class Program
 
         services.AddSingleton<ICommitCommand, CommitCommand>();
         services.AddSingleton<ICheckoutCommand, CheckoutCommand>();
+        services.AddSingleton<ISwitchCommand, SwitchCommand>();
         services.AddSingleton<IPassThroughToGitCommand, PassThroughToGitCommand>();
 
         services.AddSingleton<IGitService, GitService>();
