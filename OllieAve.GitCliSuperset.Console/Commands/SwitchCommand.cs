@@ -46,7 +46,8 @@ public class SwitchCommand : ISwitchCommand
 
         var branches = output.Output
             .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(l => l.Replace("*", "").Trim())
+            .Where(l => !l.TrimStart().StartsWith('*'))
+            .Select(l => l.Trim())
             .Where(l => !string.IsNullOrWhiteSpace(l))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(l => l, StringComparer.OrdinalIgnoreCase)
