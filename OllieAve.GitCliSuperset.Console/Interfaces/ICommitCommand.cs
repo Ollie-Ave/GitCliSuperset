@@ -2,5 +2,5 @@ namespace OllieAve.GitCliSuperset.Console.Interfaces;
 
 public interface ICommitCommand
 {
-    Task Commit(bool debug);
+    void Commit(bool debug);
 }

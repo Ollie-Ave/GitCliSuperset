@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OllieAve.GitCliSuperset.Console.Commands;
 using OllieAve.GitCliSuperset.Console.Interfaces;
@@ -12,11 +13,11 @@ namespace OllieAve.GitCliSuperset.Console;
 
 public static class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         var debug = args.Contains("--debug");
 
-        var appSettings = await LoadAppSettingsAsync(debug);
+        var appSettings = LoadAppSettingsAsync(debug);
 
         if (appSettings is null)
         {
@@ -31,29 +32,44 @@ public static class Program
         switch (command)
         {
             case "commit":
-                await serviceProvider
+                serviceProvider
                     .GetRequiredService<ICommitCommand>()
                     .Commit(debug);
                 break;
             case "checkout":
-                await serviceProvider
+                serviceProvider
                     .GetRequiredService<ICheckoutCommand>()
                     .Checkout();
                 break;
             case "switch":
-                await serviceProvider
+                serviceProvider
                     .GetRequiredService<ISwitchCommand>()
                     .Switch();
                 break;
+            case "branch":
+                if (args.Contains("delete")
+                    || args.Contains("-D")
+                    || args.Contains("-d"))
+                {
+                    serviceProvider.GetRequiredService<IBranchDeleteCommand>()
+                        .BranchDelete();
+                }
+                else
+                {
+                    serviceProvider
+                        .GetRequiredService<IPassThroughToGitCommand>()
+                        .PassThroughToGit(args);
+                }
+                break;
             default:
-                await serviceProvider
+                serviceProvider
                     .GetRequiredService<IPassThroughToGitCommand>()
                     .PassThroughToGit(args);
                 break;
         }
     }
 
-    private static async Task<AppSettings?> LoadAppSettingsAsync(bool debug)
+    private static AppSettings LoadAppSettingsAsync(bool debug)
     {
         string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         string settingsPath = Path.Join(homePath, ".gitCliSuperset", "settings.json");
@@ -63,7 +79,7 @@ public static class Program
             AnsiConsole.WriteLine($"Loading application settings from path - {settingsPath}");
         }
 
-        var appSettingsRaw = await File.ReadAllTextAsync(settingsPath);
+        var appSettingsRaw = File.ReadAllText(settingsPath);
 
         var appSettings = JsonSerializer.Deserialize<AppSettings>(appSettingsRaw);
 
@@ -77,6 +93,7 @@ public static class Program
         services.AddSingleton<ICommitCommand, CommitCommand>();
         services.AddSingleton<ICheckoutCommand, CheckoutCommand>();
         services.AddSingleton<ISwitchCommand, SwitchCommand>();
+        services.AddSingleton<IBranchDeleteCommand, BranchDeleteCommand>();
         services.AddSingleton<IPassThroughToGitCommand, PassThroughToGitCommand>();
 
         services.AddSingleton<IGitService, GitService>();

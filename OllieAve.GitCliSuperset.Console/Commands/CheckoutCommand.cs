@@ -18,7 +18,7 @@ public class CheckoutCommand : ICheckoutCommand
         this.jiraService = jiraService;
     }
 
-    public async Task Checkout()
+    public async void Checkout()
     {
         var jira = AnsiConsole.Prompt(
             new TextPrompt<string>($"Enter the Jira Ref (Without {jiraService.GetProjectKey()}):"));
@@ -34,8 +34,16 @@ public class CheckoutCommand : ICheckoutCommand
                 .AddChoices(originBranches));
 
 
-        var hadLocalChanges = await HasLocalChangesIncludingUntracked();
-        if (hadLocalChanges)
+        var hadLocalChanges = gitService.HasLocalChangesIncludingUntracked();
+
+        if (hadLocalChanges.Success == false)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to check git status:[/] {Markup.Escape(hadLocalChanges.Error)}");
+
+            return;
+        }
+
+        if (hadLocalChanges.Result.Value)
         {
             gitService.ExecuteCommand("stash push --include-untracked");
         }
@@ -45,7 +53,7 @@ public class CheckoutCommand : ICheckoutCommand
 
         gitService.ExecuteCommand("branch --unset-upstream");
 
-        if (hadLocalChanges)
+        if (hadLocalChanges.Result.Value)
         {
             gitService.ExecuteCommand("stash pop");
         }
@@ -73,21 +81,5 @@ public class CheckoutCommand : ICheckoutCommand
 
         return branches;
     }
-
-    private async Task<bool> HasLocalChangesIncludingUntracked()
-    {
-        var output = gitService.ExecuteCommand("status --porcelain");
-
-        if (!output.Success)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to check git status:[/] {Markup.Escape(output.Error)}");
-            return false;
-        }
-
-        return output.Output
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Length != 0;
-    }
-
 }
 
