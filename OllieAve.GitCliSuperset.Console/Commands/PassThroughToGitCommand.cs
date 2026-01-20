@@ -14,7 +14,7 @@ public class PassThroughToGitCommand : IPassThroughToGitCommand
 
     public void PassThroughToGit(string[] args)
     {
-        var result = gitService.ExecuteCommand(string.Join(" ", args), true);
+        var result = gitService.ExecuteCommand(string.Join(" ", args));
 
         if (result.Success)
         {
